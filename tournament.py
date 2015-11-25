@@ -78,32 +78,42 @@ def playerStandings():
     rows = cursor.fetchall()
     return rows;
     
-def reportMatch(winner, loser):
+def reportMatch(winner, loser, draw = False):
     """Records the outcome of a single match between two players.
 
     Args:
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
+      
+      draw: set to False by default. In case this parameter is made true, both players get 0.5 points for the game
     """
     
     conn = connect()
     cursor = conn.cursor()
+    pointWinner = winner
+    winnerPoints = 1
+    loserPoints = 0
     
+    if draw:
+        pointWinner = None
+        winnerPoints = 0.5
+        loserPoints = 0.5
+        
     #Made a design choice here to update statistics in case of a bye but not record it as a match
     #between the player and a dummy entry
     if loser:    
-        cursor.execute("INSERT INTO matches VALUES (%s,%s,%s)",(winner,loser,winner))
+        cursor.execute("INSERT INTO matches VALUES (%s,%s,%s)",(winner,loser,pointWinner))
     
         #Updating the losers statistics
         cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(loser,))
         rows = cursor.fetchone()
-        cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(rows[0], loser,))
+        cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(float(rows[0]) + loserPoints, loser ,))
         cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, loser,))
           
     #Updating the winners statistics
     cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(winner,))
     rows = cursor.fetchone()
-    cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(rows[0] + 1, winner,))
+    cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(float(rows[0]) + winnerPoints, winner,))
     cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, winner,))
  
     conn.commit()

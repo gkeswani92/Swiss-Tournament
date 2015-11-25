@@ -149,7 +149,25 @@ def testOddNumberOfPlayers():
             "After one match, two players with one win should be paired and one win and 0 win should be paired.")
     
     print "9. Odd number of players with bye rules works!"
+
+def testDraw():
+    deleteMatches()
+    deletePlayers()
+    registerPlayer("Juhi Tahiliani")
+    registerPlayer("Gaurav Keswani")
+    standings = playerStandings()
+    [id1, id2] = [row[0] for row in standings]
+    reportMatch(id1, id2, draw = True)
     
+    standings = playerStandings()
+    for (i, _, w, m) in standings:
+        if m != 1:
+            raise ValueError("Each player should have one match recorded.")
+        if i in (id1, id2) and float(w) != 0.5:
+            print(w)
+            print(type(w))
+            raise ValueError("Each player should have one draw recorded.")
+    print "10. After a drawn match, players have correct updated standings."
     
 if __name__ == '__main__':
     testDeleteMatches()
@@ -161,6 +179,7 @@ if __name__ == '__main__':
     testReportMatches()
     testPairings()
     testOddNumberOfPlayers()
+    testDraw()
     print "Success!  All tests pass!"
 
 
