@@ -74,7 +74,7 @@ def playerStandings():
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM players NATURAL JOIN statistics ORDER BY wins DESC")
+    cursor.execute("SELECT * from standings")
     rows = cursor.fetchall()
     return rows;
     
@@ -85,22 +85,27 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
+    
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO matches VALUES (%s,%s,%s)",(winner,loser,winner))
     
+    #Made a design choice here to update statistics in case of a bye but not record it as a match
+    #between the player and a dummy entry
+    if loser:    
+        cursor.execute("INSERT INTO matches VALUES (%s,%s,%s)",(winner,loser,winner))
+    
+        #Updating the losers statistics
+        cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(loser,))
+        rows = cursor.fetchone()
+        cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(rows[0], loser,))
+        cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, loser,))
+          
     #Updating the winners statistics
     cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(winner,))
     rows = cursor.fetchone()
     cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(rows[0] + 1, winner,))
     cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, winner,))
-    
-    #Updating the losers statistics
-    cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(loser,))
-    rows = cursor.fetchone()
-    cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(rows[0], loser,))
-    cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, loser,))
-   
+ 
     conn.commit()
     conn.close()
  
@@ -120,5 +125,22 @@ def swissPairings():
         name2: the second player's name
     """
     standings = playerStandings()
+    next_matches = []
+    bye_candidate = None
     
+    #If number of players are odd, select the last one as the bye candidate and
+    #remove him from the creation of pairings
+    if len(standings) % 2 == 1:
+        bye_candidate = (standings[-1][0], standings[-1][1], None, None)
+        standings = standings[:-1]
+        
+    for i in range(0, len(standings), 2):
+        match = (standings[i][0], standings[i][1], standings[i+1][0], standings[i+1][1])
+        next_matches.append(match)
+    
+    #If there is a bye candidate, add him to the list of matches
+    if bye_candidate:
+        next_matches.append(bye_candidate)
+    
+    return next_matches
 
