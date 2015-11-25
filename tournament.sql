@@ -6,20 +6,20 @@
 -- You can write comments in this file by starting them with two dashes, like
 -- these lines here.
 
--- Creating the database
 CREATE DATABASE tournament;
 
--- Creating the players table with the id as the primary key
 CREATE TABLE players ( 
 id serial primary key,
 name text);
 
 CREATE TABLE matches ( 
-player1 integer references players(id), 
-player2 integer references players(id), 
+player1 integer references players(id) ON DELETE CASCADE, 
+player2 integer references players(id) ON DELETE CASCADE, 
 result integer, primary key(player1, player2) );
 
 CREATE TABLE statistics (
 id integer references players ON DELETE CASCADE, 
 wins integer, 
 played integer);
+
+CREATE VIEW standings AS SELECT * FROM players NATURAL JOIN statistics ORDER BY wins DESC;
