@@ -14,7 +14,6 @@ def testDelete():
     deletePlayers()
     print "2. Player records can be deleted."
 
-
 def testCount():
     deleteMatches()
     deletePlayers()
@@ -124,7 +123,34 @@ def testPairings():
             "After one match, players with one win should be paired.")
     print "8. After one match, players with one win are paired."
 
-
+def testOddNumberOfPlayers():
+    deleteMatches()
+    deletePlayers()
+    registerPlayer("Twilight Sparkle")
+    registerPlayer("Fluttershy")
+    registerPlayer("Applejack")
+    registerPlayer("Pinkie Pie")
+    registerPlayer("Gaurav Keswani")
+    standings = playerStandings()
+    [id1, id2, id3, id4, id5] = [row[0] for row in standings]
+    reportMatch(id1, id2)
+    reportMatch(id3, id4)
+    reportMatch(id5, None)
+    pairings = swissPairings()
+    if len(pairings) != 3:
+        raise ValueError(
+            "For five players, swissPairings should return three pairs.")
+        
+    [(pid1, _, pid2, _), (pid5, _, pid3, _), (_, _, _, _)] = pairings
+    correct_pairs = set([frozenset([id1, id3]), frozenset([id5, id2])])
+    actual_pairs = set([frozenset([pid1, pid2]), frozenset([pid5, pid3])])
+    if correct_pairs != actual_pairs:
+        raise ValueError(
+            "After one match, two players with one win should be paired and one win and 0 win should be paired.")
+    
+    print "9. Odd number of players with bye rules works!"
+    
+    
 if __name__ == '__main__':
     testDeleteMatches()
     testDelete()
@@ -134,6 +160,7 @@ if __name__ == '__main__':
     testStandingsBeforeMatches()
     testReportMatches()
     testPairings()
+    testOddNumberOfPlayers()
     print "Success!  All tests pass!"
 
 
