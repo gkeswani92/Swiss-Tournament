@@ -19,7 +19,7 @@ result integer, primary key(player1, player2) );
 
 CREATE TABLE statistics (
 id integer references players ON DELETE CASCADE, 
-wins integer, 
+wins numeric, 
 played integer);
 
 CREATE VIEW standings AS SELECT * FROM players NATURAL JOIN statistics ORDER BY wins DESC;
