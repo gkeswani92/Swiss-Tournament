@@ -18,7 +18,7 @@ player2 integer references players(id) ON DELETE CASCADE,
 result integer, primary key(player1, player2) );
 
 CREATE TABLE statistics (
-id integer references players ON DELETE CASCADE, 
+id integer primary key references players ON DELETE CASCADE, 
 wins numeric, 
 played integer);
 
