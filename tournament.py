@@ -103,18 +103,14 @@ def reportMatch(winner, loser, draw = False):
     #between the player and a dummy entry
     if loser:    
         cursor.execute("INSERT INTO matches VALUES (%s,%s,%s)",(winner,loser,pointWinner))
-    
+        
         #Updating the losers statistics
-        cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(loser,))
-        rows = cursor.fetchone()
-        cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(float(rows[0]) + loserPoints, loser ,))
-        cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, loser,))
+        cursor.execute("UPDATE statistics SET wins = wins + %s WHERE id = %s",(loserPoints, loser ,))
+        cursor.execute("UPDATE statistics SET played = played + 1 WHERE id = %s",(loser,))
           
     #Updating the winners statistics
-    cursor.execute("SELECT wins, played FROM statistics WHERE id = %s",(winner,))
-    rows = cursor.fetchone()
-    cursor.execute("UPDATE statistics SET wins = %s WHERE id = %s",(float(rows[0]) + winnerPoints, winner,))
-    cursor.execute("UPDATE statistics SET played = %s WHERE id = %s",(rows[1] + 1, winner,))
+    cursor.execute("UPDATE statistics SET wins = wins + %s WHERE id = %s",(winnerPoints, winner,))
+    cursor.execute("UPDATE statistics SET played = played + 1 WHERE id = %s",(winner,))
  
     conn.commit()
     conn.close()
